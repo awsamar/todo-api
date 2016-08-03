@@ -24,7 +24,7 @@ app.get('/todos', function(req, res) {
 	var filteredTodos = todos;
 	var validAttributes = {};
 
-
+	// filter for completed query parameter
 	if (queryParams.hasOwnProperty('completed')) {
 		if (queryParams.completed === 'true') {
 			validAttributes.completed = true;
@@ -33,11 +33,24 @@ app.get('/todos', function(req, res) {
 		} else {
 			res.status(400).send([{"error": "Completed attribute in query is bad"}]);
 		};
+
+		filteredTodos = _.where(filteredTodos, validAttributes);
 	};
 
-	
+	//filter for q parameter value in description
+	if (queryParams.hasOwnProperty('q')) {
+		if (queryParams.q.length > 0) {
+			filteredTodos = _.filter(filteredTodos, function(todoItem) { 
+				return todoItem.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1; 
+			});
+		} else {
+			res.status(400).send([{"error": "q attribute in query is bad"}]);
+		};
 
-	filteredTodos = _.where(filteredTodos, validAttributes);
+		filteredTodos = _.where(filteredTodos, validAttributes);
+	};
+
+
 	res.json(filteredTodos);
 });
 
