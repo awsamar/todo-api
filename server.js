@@ -17,9 +17,28 @@ app.get('/', function(req, res) {
 });
 
 
-//GET /todos
+//GET /todos?completed=true
 app.get('/todos', function(req, res) {
-	res.json(todos);
+
+	var queryParams = req.query;
+	var filteredTodos = todos;
+	var validAttributes = {};
+
+
+	if (queryParams.hasOwnProperty('completed')) {
+		if (queryParams.completed === 'true') {
+			validAttributes.completed = true;
+		} else if (queryParams.completed === 'false'){
+			validAttributes.completed = false;
+		} else {
+			res.status(400).send([{"error": "Completed attribute in query is bad"}]);
+		};
+	};
+
+	
+
+	filteredTodos = _.where(filteredTodos, validAttributes);
+	res.json(filteredTodos);
 });
 
 
