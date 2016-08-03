@@ -30,7 +30,7 @@ app.get('/todos/:id', function(req, res) {
 //	res.send('Requesting todo with id ' + req.params.id);
 });
 
-
+// POST /todos/:id
 app.post('/todos', function(req, res) {
 	var body = _.pick(req.body, 'description', 'completed');
 
@@ -45,6 +45,21 @@ app.post('/todos', function(req, res) {
 	todos.push(body);
 
 	res.json(body);
+});
+
+//DELETE /todos/:id
+app.delete('/todos/:id', function(req, res) {
+	var searchForId = parseInt(req.params.id, 10);
+	var matchTodo = _.findWhere(todos, {id: searchForId});
+
+	if (matchTodo) {
+		todos = _.without(todos, matchTodo);
+		res.status(200).json(matchTodo);
+	} else {
+		res.status(404).send();
+	}
+
+//	res.send('Requesting todo with id ' + req.params.id);
 });
 
 
