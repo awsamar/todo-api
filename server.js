@@ -21,44 +21,47 @@ app.get('/', function(req, res) {
 
 //GET /todos?completed=true
 app.get('/todos', function(req, res) {
-
-	var queryParams = req.query;
-	var filteredTodos = todos;
-	var validAttributes = {};
+	var query = req.query;
+	var where = {};
 
 	// filter for completed query parameter
-	if (queryParams.hasOwnProperty('completed')) {
-		if (queryParams.completed === 'true') {
-			validAttributes.completed = true;
-		} else if (queryParams.completed === 'false') {
-			validAttributes.completed = false;
+	if (query.hasOwnProperty('completed')) {
+		if (query.completed === 'true') {
+			where.completed = true;
+		} else if (query.completed === 'false') {
+			where.completed = false;
 		} else {
 			res.status(400).send([{
 				"error": "Completed attribute in query is bad"
 			}]);
 		};
-
-		filteredTodos = _.where(filteredTodos, validAttributes);
 	};
 
 	//filter for q parameter value in description
-	if (queryParams.hasOwnProperty('q')) {
-		if (queryParams.q.length > 0) {
-			filteredTodos = _.filter(filteredTodos, function(todoItem) {
-				return todoItem.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
-			});
+	if (query.hasOwnProperty('q')) {
+		if (query.q.length > 0) {
+			where.description = {
+				$like: '%' + query.q.toLowerCase() + '%'
+			}
 		} else {
-			res.status(400).send([{
-				"error": "q attribute in query is bad"
-			}]);
+			res.status(400).send([{"error": "q attribute in query is bad"}]);
 		};
-
-		filteredTodos = _.where(filteredTodos, validAttributes);
 	};
 
-
-	res.json(filteredTodos);
+	db.todo.findAll({where: where}).then(function(todos) {
+		if (!!todos) {
+			res.json(todos);
+		} else {
+			res.status(404).json('No todos found.');
+		};
+	}, function(e) {
+		res.status(500).json(e);
+	});
 });
+
+
+
+
 
 
 //GET todos/:id
